@@ -5,6 +5,37 @@ from abc import ABC, abstractmethod
 
 
 class LLMProvider(ABC):
+    def __init__(self):
+        self.token_usage = {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "embedding_tokens": 0,
+        }
+
+    def estimate_tokens(self, text):
+        return len(str(text)) // 4 if text else 0
+
+    def add_token_usage(self, prompt_tokens=0, completion_tokens=0, embedding_tokens=0):
+        self.token_usage["prompt_tokens"] += prompt_tokens
+        self.token_usage["completion_tokens"] += completion_tokens
+        self.token_usage["embedding_tokens"] += embedding_tokens
+        self.token_usage["total_tokens"] = (
+            self.token_usage["prompt_tokens"]
+            + self.token_usage["completion_tokens"]
+            + self.token_usage["embedding_tokens"]
+        )
+
+    def get_token_usage(self):
+        return self.token_usage.copy()
+
+    def reset_token_usage(self):
+        self.token_usage = {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "embedding_tokens": 0,
+        }
 
     @abstractmethod
     def get_embed_model_code(self):

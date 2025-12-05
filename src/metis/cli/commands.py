@@ -36,6 +36,8 @@ Type one of the following commands (with arguments):
 - [cyan]review_code[/cyan]
 - [cyan]update patch.diff[/cyan]
 - [cyan]ask "Give me an overview of the code"[/cyan]
+- [cyan]token_usage[/cyan]
+- [cyan]reset_tokens[/cyan]
 - [magenta]exit[/magenta]   (quit the tool)
 - [magenta]help[/magenta]   (show this message)
 
@@ -126,6 +128,11 @@ def run_update(engine, patch_file, args):
     print_console("[green]Index update completed.[/green]", args.quiet)
 
 
+def reset_token_usage(engine, args):
+    engine.reset_token_usage()
+    print_console("Token counters reset.", args.quiet)
+
+
 def run_ask(engine, question):
     answer = with_spinner("Thinking...", engine.ask_question, question)
     print_console("[bold magenta]Metis Answer:[/bold magenta]\n")
@@ -140,3 +147,12 @@ def run_ask(engine, question):
             )
     else:
         print_console(escape(str(answer)))
+
+
+def run_token_usage(engine, args):
+    usage = engine.get_token_usage()
+    print_console(
+        f"Prompt: {usage['prompt_tokens']:,}, Completion: {usage['completion_tokens']:,}, Embedding: {usage['embedding_tokens']:,}, Total: {usage['total_tokens']:,}"
+    )
+    if args.output_file:
+        save_output(args.output_file, {"token_usage": usage}, args.quiet)

@@ -273,6 +273,13 @@ class MetisEngine:
         storage_context_code, storage_context_docs = (
             self.vector_backend.get_storage_contexts()
         )
+
+        # Track embedding tokens
+        total_text = " ".join(node.text for node in nodes_code + nodes_docs)
+        self.llm_provider.add_token_usage(
+            embedding_tokens=self.llm_provider.estimate_tokens(total_text)
+        )
+
         VectorStoreIndex(
             nodes_code,
             storage_context=storage_context_code,
@@ -532,3 +539,9 @@ class MetisEngine:
         if not qe_code or not qe_docs:
             raise QueryEngineInitError()
         return qe_code, qe_docs
+
+    def get_token_usage(self):
+        return self.llm_provider.get_token_usage()
+
+    def reset_token_usage(self):
+        self.llm_provider.reset_token_usage()

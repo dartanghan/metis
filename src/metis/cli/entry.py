@@ -30,6 +30,8 @@ from .commands import (
     run_file_review,
     run_review_code,
     run_update,
+    run_token_usage,
+    reset_token_usage,
     show_help,
     show_version,
 )
@@ -54,6 +56,8 @@ COMMANDS = {
     "update": run_update,
     "review_file": run_file_review,
     "ask": run_ask,
+    "token_usage": run_token_usage,
+    "reset_tokens": reset_token_usage,
     "help": show_help,
     "version": show_version,
     "exit": None,
@@ -111,7 +115,7 @@ def execute_command(engine, cmd, cmd_args, args):
         func(engine, " ".join(cmd_args))
     elif cmd == "index":
         func(engine, args.verbose, args.quiet)
-    elif cmd == "review_code":
+    elif cmd in ("review_code", "token_usage", "reset_tokens"):
         func(engine, args)
 
 
