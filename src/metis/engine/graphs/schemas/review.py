@@ -14,6 +14,10 @@ class ReviewIssueModel(BaseModel):
     issue: constr(strip_whitespace=True, min_length=1) = Field(
         description="A short description of the vulnerability."
     )
+    severity: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"] = Field(
+        description="""A qualitative rating of the risk level based on CVSS 4.0.
+                       Choose one of: LOW, MEDIUM, HIGH, CRITICAL."""
+    )    
     code_snippet: constr(strip_whitespace=True, min_length=1) = Field(
         description="""The exact lines of code that exhibit this vulnerability. This field should
                        only contain code found in the file."""
@@ -34,11 +38,7 @@ class ReviewIssueModel(BaseModel):
     )
     cwe: constr(pattern=_CWE_PATTERN) = Field(
         description="""The most appropriate CWE identifier in the format "CWE-<number>"
-                      '(e.g. "CWE-79"). If no suitable CWE exists, respond with "CWE-Unknown"."""
-    )
-    severity: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"] = Field(
-        description="""A qualitative rating of the risk level based on CVSS 4.0.
-                       Choose one of: LOW, MEDIUM, HIGH, CRITICAL."""
+                      (e.g. "CWE-79"). If no suitable CWE exists, respond with "CWE-Unknown"."""
     )
 
     @field_validator("severity", mode="before")

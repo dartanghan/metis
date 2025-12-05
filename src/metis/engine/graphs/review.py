@@ -61,12 +61,12 @@ def _build_body_text(state: ReviewState) -> str:
         file_path = state.get("file_path", "") or ""
         sections = [
             f"FILE: {file_path}",
-            "SNIPPET:",
+            "<SNIPPET>",
             snippet,
-            "",
-            "CONTEXT:",
+            "</SNIPPET>",
+            "<CONTEXT>",
             context,
-            "",
+            "</CONTEXT>",
         ]
     else:
         original_file = state.get("original_file") or ""
@@ -135,10 +135,17 @@ def review_node_llm(
     state: ReviewState,
     structured_node,
     fallback_node=None,
+    llm_provider=None,
 ) -> ReviewState:
     body_text = _build_body_text(state)
     system_prompt = state.get("system_prompt") or ""
     payload = {"system_prompt": system_prompt, "body_text": body_text}
+    logger.debug(f"PAYLOAD: {payload}")
+    logger.debug(f"BODY: {body_text}")
+    
+    # Track tokens
+    prompt_tokens = llm_provider.estimate_tokens(system_prompt + body_text) if llm_provider else 0
+    
     raw = None
     attempts = (
         (structured_node, logger.warning, "Structured review invocation failed: %s"),
@@ -154,6 +161,9 @@ def review_node_llm(
         except Exception as exc:
             log_fn(message, exc)
             raw = None
+    
+    if llm_provider and raw:
+        llm_provider.add_token_usage(prompt_tokens, llm_provider.estimate_tokens(str(raw)))
 
     reviews = _normalize_reviews(raw)
     new_state: ReviewState = dict(state)
@@ -251,6 +261,7 @@ class ReviewGraph:
             review_node_llm,
             structured_node=self._structured_review_node,
             fallback_node=self._fallback_review_node,
+            llm_provider=self.llm_provider,
         )
         parse = review_node_parse
 
